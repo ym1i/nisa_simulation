@@ -9,8 +9,9 @@ import {List, ListItem, ListItemText, ListItemAvatar, Avatar, InputAdornment, St
 
 
 const Dark = () => {
+    const [product, setProduct] = useState('spx')
     const [stockData, setStockData] = useState(null)
-    const [historicalData, setHistoricalData] = useState(null)
+    // const [historicalData, setHistoricalData] = useState(null)
     const [startDate, setStartDate] = useState(moment('2012-01-01'))
     const [endDate, setEndDate] = useState(moment('2022-01-01'))
     const [minDate, setMinDate] = useState(moment('1980-01-01'))
@@ -20,16 +21,15 @@ const Dark = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const res1 = await fetch('/api/spx')
-            const _historicalData = await res1.json()
-            setHistoricalData(_historicalData)
-
-            const res2 = await fetch('/api/dataHandler')
-            const _stockData = await res2.json()
-            setStockData(_stockData)
+            const url = `/api/dataHandler?product=${product}&start=${startDate}&end=${endDate}`
+            // const response = await fetch('/api/dataHandler')
+            const response = await fetch(url)
+            const data = await response.json()
+            // setProduct(data)
+            setStockData(data)
         }
         fetchData()
-    }, [])
+    }, [startDate, endDate])
 
     const DateRangePicker = () => {
         return (
