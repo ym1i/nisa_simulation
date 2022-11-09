@@ -2,17 +2,15 @@ import React, {useState, useEffect} from 'react'
 import _ from 'lodash'
 import styled from 'styled-components'
 import moment from 'moment'
-import {DatePicker} from '@mui/x-date-pickers/DatePicker'
-import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider'
-import {AdapterMoment} from '@mui/x-date-pickers/AdapterMoment'
 import {List, ListItem, ListItemText, ListItemAvatar, Avatar, InputAdornment, Stack, TextField} from '@mui/material'
+import DateRangePicker from '../components/dateRangePicker'
 
 
 const Dark = () => {
     const [product, setProduct] = useState('spx')
     const [stockData, setStockData] = useState(null)
     // const [historicalData, setHistoricalData] = useState(null)
-    const [startDate, setStartDate] = useState(moment('2012-01-01'))
+    const [startDate, setStartDate] = useState(moment('2000-01-01'))
     const [endDate, setEndDate] = useState(moment('2022-01-01'))
     const [minDate, setMinDate] = useState(moment('1980-01-01'))
     const [maxDate, setMaxDate] = useState(moment())
@@ -21,8 +19,7 @@ const Dark = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            const url = `/api/dataHandler?product=${product}&start=${startDate}&end=${endDate}`
-            // const response = await fetch('/api/dataHandler')
+            const url = `/api/dataHandler?product=${product}&start=${startDate}&end=${endDate}&monthlysaving=${monthlySaving}`
             const response = await fetch(url)
             const data = await response.json()
             // setProduct(data)
@@ -30,21 +27,6 @@ const Dark = () => {
         }
         fetchData()
     }, [startDate, endDate])
-
-    const DateRangePicker = () => {
-        return (
-            <LocalizationProvider dateAdapter={AdapterMoment}>
-                <Stack direction='row' spacing={3}>
-                    <DatePicker views={['year', 'month']} label='From' minDate={minDate} maxDate={maxDate}
-                                value={startDate} onChange={_date => setStartDate(_date)}
-                                renderInput={params => <TextField {...params} />}/>
-                    <DatePicker views={['year', 'month']} label='To' minDate={minDate} maxDate={maxDate} value={endDate}
-                                onChange={_date => setEndDate(_date)}
-                                renderInput={params => <TextField {...params} />}/>
-                </Stack>
-            </LocalizationProvider>
-        )
-    }
 
     const handleClick = item => {
         console.log(`${item} has been clicked.`)
@@ -84,7 +66,8 @@ const Dark = () => {
                                 <ul>
                                     <li>
                                         <div style={{width: '150px'}}>積立期間</div>
-                                        <DateRangePicker/>
+                                        <DateRangePicker start={startDate} end={endDate} min={minDate} max={maxDate}
+                                        onStartChange={_d => setStartDate(_d)} onEndChange={_d => setEndDate(_d)}/>
                                     </li>
                                     <li>
                                         <div style={{width: '150px'}}>毎月積立額</div>

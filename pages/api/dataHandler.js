@@ -6,16 +6,45 @@ import moment from 'moment'
 
 const moment2str = _moment => _moment.clone().format('YYYY-MM-DD')
 
+const simulate = (_data, _monthlySaving) => {
+    let result = [0]
+    let principal = [0]
+    let chartData = []
+    _.reverse(_data).map((d, i) => {
+        result[i + 1] = (result[i] + _monthlySaving) * (1 + d['ratio'])
+        principal[i + 1] = principal[i] + _monthlySaving
+        if (_data.length <= 48) {
+            chartData.push({
+                name: d['date'],
+                earnings: (result[i + 1] - principal[i + 1]),
+                principal: principal[i + 1]
+            })
+        } else {
+            if (i % 12 == 0) {
+                chartData.push({
+                    name: d['date'],
+                    earnings: (result[i + 1] - principal[i + 1]),
+                    principal: principal[i + 1]
+                })
+            }
+        }
+    })
+    return {result, principal, chartData}
+    // setSimulationResult(result)
+    // setPrincipal(principal)
+    // setChartData(chartData)
+}
+
 export default function dataHandler(req, res) {
     let data
     const query = req.query
-    const {product, start, end} = query
+    const {product, start, end, monthlysaving} = query
 
     const setData = (symbol, label, img, wiki, historicalData) => {
-        let _filteredData = []
+        let filteredData = []
         _.filter(historicalData['date'], (_date, i) => {
             if (_date >= moment(start) && _date < moment(end)) {
-                _filteredData.push({
+                filteredData.push({
                     id: i,
                     date: moment2str(moment(_date)),
                     close: historicalData['close'][i],
@@ -23,7 +52,10 @@ export default function dataHandler(req, res) {
                 })
             }
         })
-        return {symbol, label, img, wiki, data: _filteredData}
+
+        const simulationData = simulate(filteredData, parseInt(monthlysaving))
+
+        return {symbol, label, img, wiki, simulationData}
     }
 
     switch (product) {
@@ -33,6 +65,7 @@ export default function dataHandler(req, res) {
             console.log('product is not available')
     }
     console.log('data = ', data)
+    console.log('chart = ', data['simulationData']["chartData"])
 
     res.status(200).json(summary)
 }
