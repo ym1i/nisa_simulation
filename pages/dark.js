@@ -4,26 +4,24 @@ import styled from 'styled-components'
 import moment from 'moment'
 import {List, ListItem, ListItemText, ListItemAvatar, Avatar, InputAdornment, Stack, TextField} from '@mui/material'
 import DateRangePicker from '../components/dateRangePicker'
+import StackedBarChart from '../components/barChart'
 
 
 const Dark = () => {
     const [product, setProduct] = useState('spx')
-    const [stockData, setStockData] = useState(null)
-    // const [historicalData, setHistoricalData] = useState(null)
+    const [productData, setProductData] = useState(null)
     const [startDate, setStartDate] = useState(moment('2000-01-01'))
     const [endDate, setEndDate] = useState(moment('2022-01-01'))
-    const [minDate, setMinDate] = useState(moment('1980-01-01'))
-    const [maxDate, setMaxDate] = useState(moment())
     const [monthlySaving, setMonthlySaving] = useState(30000)
 
+    console.log('productData = ', productData)
 
     useEffect(() => {
         const fetchData = async () => {
             const url = `/api/dataHandler?product=${product}&start=${startDate}&end=${endDate}&monthlysaving=${monthlySaving}`
             const response = await fetch(url)
             const data = await response.json()
-            // setProduct(data)
-            setStockData(data)
+            setProductData(data)
         }
         fetchData()
     }, [startDate, endDate])
@@ -43,6 +41,9 @@ const Dark = () => {
         )
     }
 
+    if (!productData) return
+    console.log('chartData = ', productData['chartData'])
+
     return (
         <Container>
             <App>
@@ -58,7 +59,7 @@ const Dark = () => {
                         <ContentWrapper>
                             <ContentHeader>
                                 <List>
-                                    {_.map(stockData, item => <StockListing item={item}/>)}
+                                    {_.map(productData['summary'], item => <StockListing item={item}/>)}
                                 </List>
                             </ContentHeader>
                             <ContentSection>
@@ -66,8 +67,10 @@ const Dark = () => {
                                 <ul>
                                     <li>
                                         <div style={{width: '150px'}}>積立期間</div>
-                                        <DateRangePicker start={startDate} end={endDate} min={minDate} max={maxDate}
-                                        onStartChange={_d => setStartDate(_d)} onEndChange={_d => setEndDate(_d)}/>
+                                        <DateRangePicker start={startDate} end={endDate} min={productData['minDate']}
+                                                         max={productData['maxDate']}
+                                                         onStartChange={_d => setStartDate(_d)}
+                                                         onEndChange={_d => setEndDate(_d)}/>
                                     </li>
                                     <li>
                                         <div style={{width: '150px'}}>毎月積立額</div>
@@ -78,6 +81,11 @@ const Dark = () => {
                                                    onChange={e => setMonthlySaving(Number(e.target.value))}/>
                                     </li>
                                 </ul>
+                            </ContentSection>
+                            <ContentSection>
+                                <div className='chart-wrapper'>
+                                    <StackedBarChart data={productData['simulationData']['chartData']}/>
+                                </div>
                             </ContentSection>
                         </ContentWrapper>
                     </Main>
@@ -218,7 +226,7 @@ const ContentSection = styled.div`
         margin-bottom: 14px;
     }
     
-    ul {
+    ul, .chart-wrapper {
         // .content-section ul
         display: flex;
         flex-direction: column;

@@ -3,6 +3,8 @@ import summary from './summary.json'
 import spx from './spx.json'
 import moment from 'moment'
 
+const indexList = ['spx', 'ndx', 'dji']
+const individualList = ['appl', 'amazon', 'google']
 
 const moment2str = _moment => _moment.clone().format('YYYY-MM-DD')
 
@@ -29,10 +31,8 @@ const simulate = (_data, _monthlySaving) => {
             }
         }
     })
+
     return {result, principal, chartData}
-    // setSimulationResult(result)
-    // setPrincipal(principal)
-    // setChartData(chartData)
 }
 
 export default function dataHandler(req, res) {
@@ -41,6 +41,10 @@ export default function dataHandler(req, res) {
     const {product, start, end, monthlysaving} = query
 
     const setData = (symbol, label, img, wiki, historicalData) => {
+        const size = _.size(historicalData["date"])
+        const minDate = moment(historicalData["date"][size - 1])
+        const maxDate = moment(historicalData["date"][0])
+
         let filteredData = []
         _.filter(historicalData['date'], (_date, i) => {
             if (_date >= moment(start) && _date < moment(end)) {
@@ -55,7 +59,7 @@ export default function dataHandler(req, res) {
 
         const simulationData = simulate(filteredData, parseInt(monthlysaving))
 
-        return {symbol, label, img, wiki, simulationData}
+        return {symbol, label, img, wiki, simulationData, minDate, maxDate, indexList, individualList, summary}
     }
 
     switch (product) {
@@ -64,8 +68,6 @@ export default function dataHandler(req, res) {
         default:
             console.log('product is not available')
     }
-    console.log('data = ', data)
-    console.log('chart = ', data['simulationData']["chartData"])
 
-    res.status(200).json(summary)
+    res.status(200).json(data)
 }

@@ -69,9 +69,9 @@ const Home = () => {
             const spx = await response.json()
             setSPX(spx)
 
-            const _data = await fetch('/api/dataHandler')
-            const data = await _data.json()
-            setData(data)
+            // const _data = await fetch('/api/dataHandler')
+            // const data = await _data.json()
+            // setData(data)
         }
         fetchData()
     }, [])
