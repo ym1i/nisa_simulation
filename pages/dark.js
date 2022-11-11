@@ -9,12 +9,12 @@ import StackedBarChart from '../components/barChart'
 
 const Dark = () => {
     const [product, setProduct] = useState('spx')
+    const [productType, setProductType] = useState('index')
     const [productData, setProductData] = useState(null)
     const [startDate, setStartDate] = useState(moment('2000-01-01'))
     const [endDate, setEndDate] = useState(moment('2022-01-01'))
     const [monthlySaving, setMonthlySaving] = useState(30000)
 
-    console.log('productData = ', productData)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -24,25 +24,26 @@ const Dark = () => {
             setProductData(data)
         }
         fetchData()
-    }, [startDate, endDate])
+    }, [product, startDate, endDate, monthlySaving])
 
-    const handleClick = item => {
-        console.log(`${item} has been clicked.`)
-    }
 
-    const StockListing = ({item}) => {
+    const ProductList = () => {
+        const currentList = productType == 'index' ? productData['productList']['index'] : productData['productList']['individual']
         return (
-            <ListItem onClick={() => handleClick(item)} style={{cursor: 'pointer'}}>
-                <ListItemAvatar>
-                    <Avatar src={item['img']} alt={item['label']}/>
-                </ListItemAvatar>
-                <ListItemText primary={item['label']}/>
-            </ListItem>
+            <List>
+                {_.map(currentList, item =>
+                    <StyledListItem className={product == item['symbol'] ? 'active' : ''}
+                              onClick={() => setProduct(item['symbol'])} style={{cursor: 'pointer'}}>
+                        <ListItemAvatar>
+                            <Avatar src={item['img']} alt={item['label']}/>
+                        </ListItemAvatar>
+                        <ListItemText primary={item['label']}/>
+                    </StyledListItem>)}
+            </List>
         )
     }
 
     if (!productData) return
-    console.log('chartData = ', productData['chartData'])
 
     return (
         <Container>
@@ -52,15 +53,15 @@ const Dark = () => {
                     <Main>
                         <MainHeader>
                             <HeaderMenu>
-                                <Menu>株式指数</Menu>
-                                <Menu>個別銘柄</Menu>
+                                <Menu className={productType == 'index' ? 'active' : ''}
+                                      onClick={() => setProductType('index')}>株式指数</Menu>
+                                <Menu className={productType == 'individual' ? 'active' : ''}
+                                      onClick={() => setProductType('individual')}>個別銘柄</Menu>
                             </HeaderMenu>
                         </MainHeader>
                         <ContentWrapper>
                             <ContentHeader>
-                                <List>
-                                    {_.map(productData['summary'], item => <StockListing item={item}/>)}
-                                </List>
+                                <ProductList/>
                             </ContentHeader>
                             <ContentSection>
                                 <div>積立設定</div>
@@ -176,6 +177,11 @@ const Menu = styled.a`
     transition: 0.3s;
     cursor: pointer;
     background-color: transparent;
+    
+    &.active {
+        color: #f9fafb;
+        border-bottom: 2px solid #f9fafb;    
+    }
 `
 
 const ContentWrapper = styled.div`
@@ -211,8 +217,11 @@ const ContentHeader = styled.div`
     }
 `
 
-const ContentHeaderItems = styled.div`
-
+const StyledListItem = styled(ListItem)`
+    &.active {
+        border: 1px solid #f9fafb;
+        border-radius: 8px;
+    }  
 `
 
 const ContentSection = styled.div`

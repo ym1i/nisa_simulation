@@ -1,10 +1,8 @@
 import _ from 'lodash'
-import summary from './summary.json'
+import productList from './productList.json'
 import spx from './spx.json'
 import moment from 'moment'
 
-const indexList = ['spx', 'ndx', 'dji']
-const individualList = ['appl', 'amazon', 'google']
 
 const moment2str = _moment => _moment.clone().format('YYYY-MM-DD')
 
@@ -18,15 +16,15 @@ const simulate = (_data, _monthlySaving) => {
         if (_data.length <= 48) {
             chartData.push({
                 name: d['date'],
-                earnings: (result[i + 1] - principal[i + 1]),
-                principal: principal[i + 1]
+                earnings: (result[i] - principal[i]),
+                principal: principal[i]
             })
         } else {
             if (i % 12 == 0) {
                 chartData.push({
                     name: d['date'],
-                    earnings: (result[i + 1] - principal[i + 1]),
-                    principal: principal[i + 1]
+                    earnings: (result[i] - principal[i]),
+                    principal: principal[i]
                 })
             }
         }
@@ -40,7 +38,7 @@ export default function dataHandler(req, res) {
     const query = req.query
     const {product, start, end, monthlysaving} = query
 
-    const setData = (symbol, label, img, wiki, historicalData) => {
+    const setData = (historicalData) => {
         const size = _.size(historicalData["date"])
         const minDate = moment(historicalData["date"][size - 1])
         const maxDate = moment(historicalData["date"][0])
@@ -59,12 +57,22 @@ export default function dataHandler(req, res) {
 
         const simulationData = simulate(filteredData, parseInt(monthlysaving))
 
-        return {symbol, label, img, wiki, simulationData, minDate, maxDate, indexList, individualList, summary}
+        return {simulationData, minDate, maxDate, productList}
     }
 
     switch (product) {
         case 'spx':
-            data = setData(summary['spx']['symbol'], summary['spx']['label'], summary['spx']['img'], summary['spx']['wiki'], spx)
+            data = setData(spx)
+        case 'ndx':
+            data = setData(spx)
+        case 'dji':
+            data = setData(spx)
+        case 'aapl':
+            data = setData(spx)
+        case 'amzn':
+            data = setData(spx)
+        case 'goog':
+            data = setData(spx)
         default:
             console.log('product is not available')
     }
