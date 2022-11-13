@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import styled from 'styled-components'
-import {BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts'
+import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts'
 import {Grid} from '@mui/material'
 
 
@@ -24,31 +24,21 @@ const StackedBarChart = ({data}) => {
         setEarnings(e['earnings'])
     }
 
-    const Tooltip = () => {
-        return (
-            <TooltipWrapper>
-                <TooltipDate>{date}</TooltipDate>
-                <TooltipTotal>
-                    <span style={{fontSize: '1.2rem', lineHeight: '1.5'}}>元本 + 収益</span>
-                    <span
-                        style={{
-                            fontSize: '2.0rem',
-                            textAlign: 'right'
-                        }}>{parseInt(principal) + parseInt(earnings)}円</span>
-                </TooltipTotal>
-                <TooltipItems>
-                    <div>
-                        <TooltipItemLabel bgcolor={'#4AAAED'}>元本</TooltipItemLabel>
-                        <TooltipItemValue>{principal}円</TooltipItemValue>
-                    </div>
-                    <div>
-                        <TooltipItemLabel bgcolor={'#F54058'}>収益</TooltipItemLabel>
-                        <TooltipItemValue>{parseInt(earnings)}円</TooltipItemValue>
-                    </div>
-                </TooltipItems>
-            </TooltipWrapper>
-        )
-    }
+    const Tooltip = () =>
+        <TooltipWrapper>
+            <Date>{date}</Date>
+            <TotalValue>{(Number(principal) + Number(earnings)).toLocaleString(undefined, {maximumFractionDigits: 0})}円</TotalValue>
+            <Detail>
+                <div>
+                    <span style={{position: 'relative', margin: '0 10px'}}><Circle color='#4AAAED'/>元本</span>
+                    <span>{Number(principal).toLocaleString()}円</span>
+                </div>
+                <div>
+                    <span style={{position: 'relative', margin: '0 10px'}}><Circle color='#F54058'/>収益</span>
+                    <span>{Number(earnings).toLocaleString(undefined, {maximumFractionDigits: 0})}円</span>
+                </div>
+            </Detail>
+        </TooltipWrapper>
 
     return (
         <div>
@@ -60,7 +50,6 @@ const StackedBarChart = ({data}) => {
                             <CartesianGrid strokeDasharray='3 3'/>
                             <XAxis dataKey='name'/>
                             <YAxis/>
-                            {/*<Tooltip/>*/}
                             <Legend/>
                             <Bar dataKey='principal' stackId='a' fill='#4AAAED'
                                  onMouseEnter={e => handleMouseEnter(e)}/>
@@ -81,65 +70,57 @@ export default StackedBarChart
 
 
 const TooltipWrapper = styled.div`
-    width: 280px;
-    border: 1px solid #EEEEEE;
-    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 16px;
+    background-color: rgb(146 151 179 / 13%);
+    border-radius: 14px;
+    border: 1px solid rgba(16 18 27 / 40%);
+    padding: 20px;
+    cursor: pointer;
+    transition: 0.3s ease;
 `
 
-const TooltipDate = styled.div`
-    color: #FFF;
-    font-weight: bold;
-    background: #4AAAED;
+const Date = styled.span`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(113 119 144 / 25%);
+    font-size: 18px;
+    font-weight: 600;
+`
+
+const TotalValue = styled.div`
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 40px;
-    font-size: 1.6rem;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.6em;
+    margin-top: 20px;
+    border-bottom: 1px solid rgba(113 119 144 / 25%);
+    padding-bottom: 20px;
 `
 
-const TooltipTotal = styled.div`
+const Detail = styled.div`
+    display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
-    height: 78px;
-    background-color: #fff;
-    display: flex;
-    // justify-content: space-between;
-    align-items: center;
-    padding: 10px 12px;
-`
-
-const TooltipItems = styled.div`
-    padding: 8px 12px;
-    background: #EEEEEE;
+    align-items: start;
+    margin-top: 16px;
     
-    > div {
-        display: block;
-        align-items: center;
-        justify-content: space-between;
-        padding: 4px 0;
+    div {
+        padding: 0 0 8px 0;
+        font-size: 14px
     }
 `
 
-const TooltipItemLabel = styled.span`
-    font-size: 1.2rem;
-    justify-content: start;
-    display: flex;
-    // justify-content: center;
-    align-items: center;
-    padding-right: 10px;
-    
-    &:before {
-        ${(props) => `background-color: ${props.bgcolor}`};
-        content: "";
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        margin-right: 5px;
-    }
-`
-
-const TooltipItemValue = styled.span`
-    font-size: 1.4rem;
-    display: block;
-    text-align: right;
+const Circle = styled.span`
+    width: 6px;
+    height: 6px;
+    background-color: ${props => props.color};
+    position: absolute;
+    border-radius: 50%;
+    top: 4px;
+    left: -10px;
 `

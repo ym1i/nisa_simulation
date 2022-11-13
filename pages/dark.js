@@ -8,23 +8,26 @@ import StackedBarChart from '../components/barChart'
 
 
 const Dark = () => {
-    const [product, setProduct] = useState('spx')
+    const [product, setProduct] = useState(null)
+    const [productSymbol, setProductSymbol] = useState('spx')
     const [productType, setProductType] = useState('index')
     const [productData, setProductData] = useState(null)
     const [startDate, setStartDate] = useState(moment('2000-01-01'))
     const [endDate, setEndDate] = useState(moment('2022-01-01'))
     const [monthlySaving, setMonthlySaving] = useState(30000)
 
-
     useEffect(() => {
         const fetchData = async () => {
-            const url = `/api/dataHandler?product=${product}&start=${startDate}&end=${endDate}&monthlysaving=${monthlySaving}`
+            const url = `/api/dataHandler?product=${productSymbol}&start=${startDate}&end=${endDate}&monthlysaving=${monthlySaving}`
             const response = await fetch(url)
             const data = await response.json()
             setProductData(data)
+            setProduct(data['productList'][productType][productSymbol])
         }
         fetchData()
-    }, [product, startDate, endDate, monthlySaving])
+    }, [productSymbol, startDate, endDate, monthlySaving])
+
+    console.log(product)
 
 
     const ProductList = () => {
@@ -32,8 +35,8 @@ const Dark = () => {
         return (
             <List>
                 {_.map(currentList, item =>
-                    <StyledListItem className={product == item['symbol'] ? 'active' : ''}
-                              onClick={() => setProduct(item['symbol'])} style={{cursor: 'pointer'}}>
+                    <StyledListItem className={productSymbol == item['symbol'] ? 'active' : ''}
+                                    onClick={() => setProductSymbol(item['symbol'])}>
                         <ListItemAvatar>
                             <Avatar src={item['img']} alt={item['label']}/>
                         </ListItemAvatar>
@@ -66,6 +69,15 @@ const Dark = () => {
                             <ContentSection>
                                 <div>積立設定</div>
                                 <ul>
+                                    <li>
+                                        <div style={{width: '150px'}}>積立銘柄</div>
+                                        <ListItem>
+                                            <ListItemAvatar>
+                                                <Avatar src={product['img']} alt={product['label']}/>
+                                            </ListItemAvatar>
+                                            <ListItemText primary={product['label']}/>
+                                        </ListItem>
+                                    </li>
                                     <li>
                                         <div style={{width: '150px'}}>積立期間</div>
                                         <DateRangePicker start={startDate} end={endDate} min={productData['minDate']}
@@ -110,7 +122,8 @@ const Container = styled.div`
     padding: 2em;
     width: 100%;
     height: 100vh;
-    background-image: url('neon.png');
+    background-image: url('Neon.jpeg');
+    // background-image: linear-gradient(45deg, #888, transparent);
     background-size: cover;
     background-position: center;
 `
@@ -130,6 +143,10 @@ const App = styled.div`
     -webkit-backdrop-filter: blur(20px);
     font-size: 15px;
     font-weight: 500;
+    // background-image: url('neon-frame2.webp');
+    // background-image: linear-gradient(45deg, #888, transparent);
+    background-size: cover;
+    background-position: center;
 `
 
 const Header = styled.div`
@@ -158,7 +175,7 @@ const Main = styled.div`
 const MainHeader = styled.div`
     display: flex;
     align-items: center;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(113 119 144 / 25%);
     height: 58px;
     flex-shrink: 0;
 `
@@ -218,9 +235,10 @@ const ContentHeader = styled.div`
 `
 
 const StyledListItem = styled(ListItem)`
+    cursor: pointer;
     &.active {
-        border: 1px solid #f9fafb;
-        border-radius: 8px;
+        // transform: scale(1.02);
+        background-color: rgba(255 255 255 / 40%);
     }  
 `
 
