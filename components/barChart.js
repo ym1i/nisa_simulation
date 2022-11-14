@@ -2,6 +2,8 @@ import React, {useEffect, useState} from 'react'
 import styled from 'styled-components'
 import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts'
 import {Grid} from '@mui/material'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+import CalculateIcon from '@mui/icons-material/Calculate'
 
 
 const StackedBarChart = ({data}) => {
@@ -26,15 +28,15 @@ const StackedBarChart = ({data}) => {
 
     const Tooltip = () =>
         <TooltipWrapper>
-            <Date>{date}</Date>
+            <Date><CalendarMonthIcon fontSize='medium' sx={{ marginRight: '5px' }}/>{date}</Date>
             <TotalValue>{(Number(principal) + Number(earnings)).toLocaleString(undefined, {maximumFractionDigits: 0})}円</TotalValue>
             <Detail>
                 <div>
-                    <span style={{position: 'relative', margin: '0 10px'}}><Circle color='#4AAAED'/>元本</span>
+                    <span style={{display: 'flex', margin: '0 10px'}}><CalculateIcon sx={{color: '#4AAAED', marginRight: '5px', fontSize: 18}}/>元本</span>
                     <span>{Number(principal).toLocaleString()}円</span>
                 </div>
                 <div>
-                    <span style={{position: 'relative', margin: '0 10px'}}><Circle color='#F54058'/>収益</span>
+                    <span style={{display: 'flex', margin: '0 10px'}}><CalculateIcon sx={{color: '#F54058', marginRight: '5px', fontSize: 18}}/>収益</span>
                     <span>{Number(earnings).toLocaleString(undefined, {maximumFractionDigits: 0})}円</span>
                 </div>
             </Detail>
@@ -95,7 +97,7 @@ const Date = styled.span`
 const TotalValue = styled.div`
     display: flex;
     justify-content: center;
-    font-size: 20px;
+    font-size: 28px;
     font-weight: 600;
     line-height: 1.6em;
     margin-top: 20px;
@@ -109,18 +111,9 @@ const Detail = styled.div`
     align-items: start;
     margin-top: 16px;
     
-    div {
+    > div {
+        display: flex;
         padding: 0 0 8px 0;
         font-size: 14px
     }
-`
-
-const Circle = styled.span`
-    width: 6px;
-    height: 6px;
-    background-color: ${props => props.color};
-    position: absolute;
-    border-radius: 50%;
-    top: 4px;
-    left: -10px;
 `

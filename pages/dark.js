@@ -9,7 +9,7 @@ import StackedBarChart from '../components/barChart'
 
 const Dark = () => {
     const [product, setProduct] = useState(null)
-    const [productSymbol, setProductSymbol] = useState('spx')
+    const [productSymbol, setProductSymbol] = useState('us500')
     const [productType, setProductType] = useState('index')
     const [productData, setProductData] = useState(null)
     const [startDate, setStartDate] = useState(moment('2000-01-01'))
@@ -19,6 +19,7 @@ const Dark = () => {
     useEffect(() => {
         const fetchData = async () => {
             const url = `/api/dataHandler?product=${productSymbol}&start=${startDate}&end=${endDate}&monthlysaving=${monthlySaving}`
+            console.log('url = ', url)
             const response = await fetch(url)
             const data = await response.json()
             setProductData(data)
@@ -27,11 +28,18 @@ const Dark = () => {
         fetchData()
     }, [productSymbol, startDate, endDate, monthlySaving])
 
-    console.log(product)
-
 
     const ProductList = () => {
-        const currentList = productType == 'index' ? productData['productList']['index'] : productData['productList']['individual']
+        // const currentList = productType == 'index' ? productData['productList']['index'] : productData['productList']['individual']
+        let currentList
+        if (productType == 'index') {
+            currentList = productData['productList']['index']
+        } else if (productType == 'individual') {
+            currentList =  productData['productList']['individual']
+        } else if (productType == 'crypto') {
+            currentList =  productData['productList']['crypto']
+        }
+
         return (
             <List>
                 {_.map(currentList, item =>
@@ -60,6 +68,8 @@ const Dark = () => {
                                       onClick={() => setProductType('index')}>株式指数</Menu>
                                 <Menu className={productType == 'individual' ? 'active' : ''}
                                       onClick={() => setProductType('individual')}>個別銘柄</Menu>
+                                <Menu className={productType == 'crypto' ? 'active' : ''}
+                                      onClick={() => setProductType('crypto')}>暗号資産</Menu>
                             </HeaderMenu>
                         </MainHeader>
                         <ContentWrapper>
@@ -122,7 +132,7 @@ const Container = styled.div`
     padding: 2em;
     width: 100%;
     height: 100vh;
-    background-image: url('Neon.jpeg');
+    background-image: url('Einstein01.jpeg');
     // background-image: linear-gradient(45deg, #888, transparent);
     background-size: cover;
     background-position: center;
