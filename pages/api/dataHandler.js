@@ -8,6 +8,7 @@ import moment from 'moment'
 const moment2str = _moment => _moment.clone().format('YYYY-MM-DD')
 
 const simulate = (_data, _monthlySaving) => {
+    console.log('_data = ', _data)
     let result = [0]
     let principal = [0]
     let chartData = []
@@ -21,7 +22,7 @@ const simulate = (_data, _monthlySaving) => {
                 principal: principal[i]
             })
         } else {
-            if (i % 12 == 0) {
+            if (d['date'].month() == 0) {
                 chartData.push({
                     name: d['date'],
                     earnings: (result[i] - principal[i]),
@@ -30,6 +31,9 @@ const simulate = (_data, _monthlySaving) => {
             }
         }
     })
+    if (chartData[chartData.length - 1]['name'] != _data[_data.length - 1]['date']) {
+
+    }
 
     return {result, principal, chartData}
 }
@@ -39,22 +43,18 @@ export default function dataHandler(req, res) {
     const query = req.query
     const {product, start, end, monthlysaving} = query
 
-    console.log('product = ', product)
-
     const setData = (historicalData) => {
         const size = _.size(historicalData["date"])
         const minDate = moment(historicalData["date"][size - 1])
         const maxDate = moment(historicalData["date"][0])
-        console.log('size = ', size)
-        console.log('minDate = ', minDate)
-        console.log('close = ', historicalData["close"][0])
 
         let filteredData = []
         _.filter(historicalData['date'], (_date, i) => {
             if (_date >= moment(start) && _date < moment(end)) {
                 filteredData.push({
                     id: i,
-                    date: moment2str(moment(_date)),
+                    // date: moment2str(moment(_date)),
+                    date: moment(_date),
                     close: historicalData['close'][i],
                     ratio: historicalData['ratio'][i]
                 })
@@ -69,30 +69,44 @@ export default function dataHandler(req, res) {
     switch (product) {
         case 'us500':
             data = setData(us500)
+            break
         case 'us100':
             data = setData(us500)
+            break
         case 'us30':
             data = setData(us30)
+            break
         case 'eu50':
             data = setData(us500)
+            break
         case 'uk100':
             data = setData(us500)
+            break
         case 'de40':
             data = setData(us500)
+            break
         case 'jp225':
+
             data = setData(us500)
+            break
         case 'hk50':
             data = setData(us500)
+            break
         case 'appl':
             data = setData(us500)
+            break
         case 'amzn':
             data = setData(us500)
+            break
         case 'goog':
             data = setData(us500)
+            break
         case 'btc':
             data = setData(us500)
+            break
         case 'eth':
             data = setData(us500)
+            break
         default:
             console.log('product is not available')
     }
