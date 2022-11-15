@@ -6,6 +6,7 @@ import moment from 'moment'
 
 
 const moment2str = _moment => _moment.clone().format('YYYY-MM-DD')
+const moment2Year = _moment => _moment.clone().format('YYYY')
 
 const simulate = (_data, _monthlySaving) => {
     console.log('_data = ', _data)
@@ -17,22 +18,32 @@ const simulate = (_data, _monthlySaving) => {
         principal[i + 1] = principal[i] + _monthlySaving
         if (_data.length <= 48) {
             chartData.push({
-                name: d['date'],
+                name: moment2Year(d['date']),
+                date: moment2str(d['date']),
                 earnings: (result[i] - principal[i]),
                 principal: principal[i]
             })
         } else {
             if (d['date'].month() == 0) {
                 chartData.push({
-                    name: d['date'],
+                    name: moment2Year(d['date']),
+                    date: moment2str(d['date']),
                     earnings: (result[i] - principal[i]),
                     principal: principal[i]
                 })
             }
         }
     })
-    if (chartData[chartData.length - 1]['name'] != _data[_data.length - 1]['date']) {
-
+    if (chartData[chartData.length - 1]['date'] != _data[_data.length - 1]['date']) {
+        console.log('chartData[chartData.length - 1][name] = ', chartData[chartData.length - 1]['date'])
+        console.log('_data[_data.length - 1][date] = ', _data[_data.length - 1]['date'])
+        chartData.push({
+            name: moment2Year(_data[_data.length - 1]['date']),
+            date: moment2str(_data[_data.length - 1]['date']),
+            earnings: (result[result.length - 1] - principal[principal.length - 1]),
+            principal: principal[principal.length - 1]
+        })
+        console.log('>>> chartData[chartData.length - 1][name] = ', chartData[chartData.length - 1]['date'])
     }
 
     return {result, principal, chartData}
@@ -50,10 +61,9 @@ export default function dataHandler(req, res) {
 
         let filteredData = []
         _.filter(historicalData['date'], (_date, i) => {
-            if (_date >= moment(start) && _date < moment(end)) {
+            if (_date >= moment(start) && _date <= moment(end)) {
                 filteredData.push({
                     id: i,
-                    // date: moment2str(moment(_date)),
                     date: moment(_date),
                     close: historicalData['close'][i],
                     ratio: historicalData['ratio'][i]

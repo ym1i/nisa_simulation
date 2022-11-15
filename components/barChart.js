@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react'
+import moment from 'moment'
 import styled from 'styled-components'
 import {BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer} from 'recharts'
 import {Grid} from '@mui/material'
@@ -7,28 +8,29 @@ import CalculateIcon from '@mui/icons-material/Calculate'
 
 
 const StackedBarChart = ({data}) => {
+    console.log('barChart.js \n | data = ', data)
     const [date, setDate] = useState()
     const [principal, setPrincipal] = useState()
     const [earnings, setEarnings] = useState()
 
     useEffect(() => {
         if (data.length > 0) {
-            setDate(data[data.length - 1]['name'])
+            setDate(data[data.length - 1]['date'])
             setPrincipal(data[data.length - 1]['principal'])
             setEarnings(data[data.length - 1]['earnings'])
         }
     }, [data])
 
 
-    const handleMouseEnter = (e) => {
-        setDate(e['name'])
-        setPrincipal(e['principal'])
-        setEarnings(e['earnings'])
-    }
+    // const handleMouseEnter = (e) => {
+    //     setDate(e['name'])
+    //     setPrincipal(e['principal'])
+    //     setEarnings(e['earnings'])
+    // }
 
-    const Tooltip = () =>
+    const FixedTooltip = () =>
         <TooltipWrapper>
-            <Date><CalendarMonthIcon fontSize='medium' sx={{ marginRight: '5px' }}/>{date}</Date>
+            <Date><CalendarMonthIcon fontSize='medium' sx={{ marginRight: '5px' }}/>{moment(date).clone().format('YYYY-MM-DD')}</Date>
             <TotalValue>{(Number(principal) + Number(earnings)).toLocaleString(undefined, {maximumFractionDigits: 0})}円</TotalValue>
             <Detail>
                 <div>
@@ -42,6 +44,7 @@ const StackedBarChart = ({data}) => {
             </Detail>
         </TooltipWrapper>
 
+
     return (
         <div>
             <Grid container>
@@ -52,15 +55,16 @@ const StackedBarChart = ({data}) => {
                             <CartesianGrid strokeDasharray='3 3'/>
                             <XAxis dataKey='name'/>
                             <YAxis/>
+                            {/*<Tooltip content={CustomTooltip}/>*/}
                             <Legend/>
-                            <Bar dataKey='principal' stackId='a' fill='#4AAAED'
-                                 onMouseEnter={e => handleMouseEnter(e)}/>
+                            {/*<Bar dataKey='principal' stackId='a' fill='#4AAAED' onMouseEnter={e => handleMouseEnter(e)}/>*/}
+                            <Bar dataKey='principal' stackId='a' fill='#4AAAED'/>
                             <Bar dataKey='earnings' stackId='a' fill='#F54058'/>
                         </BarChart>
                     </ResponsiveContainer>
                 </Grid>
                 <Grid xs={12} md={4} sx={{display: 'flex', alignItems: 'center', padding: '20px'}}>
-                    <Tooltip/>
+                    <FixedTooltip/>
                 </Grid>
             </Grid>
         </div>

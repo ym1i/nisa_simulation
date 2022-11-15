@@ -19,7 +19,6 @@ const Index = () => {
     useEffect(() => {
         const fetchData = async () => {
             const url = `/api/dataHandler?product=${productSymbol}&start=${startDate}&end=${endDate}&monthlysaving=${monthlySaving}`
-            console.log('url = ', url)
             const response = await fetch(url)
             const data = await response.json()
             setProductData(data)
@@ -30,7 +29,6 @@ const Index = () => {
 
 
     const ProductList = () => {
-        // const currentList = productType == 'index' ? productData['productList']['index'] : productData['productList']['individual']
         let currentList
         if (productType == 'index') {
             currentList = productData['productList']['index']
