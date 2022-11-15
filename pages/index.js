@@ -1,250 +1,303 @@
 import React, {useState, useEffect} from 'react'
 import _ from 'lodash'
-import Link from 'next/link'
 import styled from 'styled-components'
 import moment from 'moment'
-import {LocalizationProvider} from '@mui/x-date-pickers/LocalizationProvider'
-import {DatePicker} from '@mui/x-date-pickers/DatePicker'
-import {AdapterMoment} from '@mui/x-date-pickers/AdapterMoment'
-import {Container, TextField, Stack, InputAdornment, Card, CardContent, Typography, CardHeader, Avatar, CardActions, IconButton} from '@mui/material'
-import CalculateIcon from '@mui/icons-material/Calculate'
-import TrendingUpIcon from '@mui/icons-material/TrendingUp'
-import InfoIcon from '@mui/icons-material/Info'
-
-import Header from '../components/header'
-import Segment from '../components/segment'
+import {List, ListItem, ListItemText, ListItemAvatar, Avatar, InputAdornment, Stack, TextField} from '@mui/material'
+import DateRangePicker from '../components/dateRangePicker'
 import StackedBarChart from '../components/barChart'
-import se from "react-datepicker";
 
 
-const moment2str = _moment => _moment.clone().format('YYYY-MM-DD')
-
-const Home = () => {
-    const [data, setData] = useState(null)
-    const [spx, setSPX] = useState(null)
-    const [filteredSPX, setFilteredSPX] = useState([])
-    const [simulationResult, setSimulationResult] = useState([])
-    const [principal, setPrincipal] = useState([])
-    const [monthlySaving, setMonthlySaving] = useState(30000)
-    const [startDate, setStartDate] = useState(moment('2012-01-01'))
+const Index = () => {
+    const [product, setProduct] = useState(null)
+    const [productSymbol, setProductSymbol] = useState('us500')
+    const [productType, setProductType] = useState('index')
+    const [productData, setProductData] = useState(null)
+    const [startDate, setStartDate] = useState(moment('2000-01-01'))
     const [endDate, setEndDate] = useState(moment('2022-01-01'))
-    const [minDate, setMinDate] = useState(moment('1980-01-01'))
-    const [maxDate, setMaxDate] = useState(moment())
-    const [chartData, setChartData] = useState([])
-    const [symbol, setSymbol] = useState('')
-    const [selectedItem, setSelectedItem] = useState({})
-
-
-    const simulate = () => {
-        let result = [0]
-        let principal = [0]
-        let chartData = []
-        _.reverse(filteredSPX).map((spx, i) => {
-            result[i + 1] = (result[i] + monthlySaving) * (1 + spx['ratio'])
-            principal[i + 1] = principal[i] + monthlySaving
-            if (filteredSPX.length <= 48) {
-                chartData.push({
-                    name: spx['date'],
-                    earnings: (result[i + 1] - principal[i + 1]),
-                    principal: principal[i + 1]
-                })
-            } else {
-                if (i % 12 == 0) {
-                    chartData.push({
-                        name: spx['date'],
-                        earnings: (result[i + 1] - principal[i + 1]),
-                        principal: principal[i + 1]
-                    })
-                }
-            }
-        })
-        setSimulationResult(result)
-        setPrincipal(principal)
-        setChartData(chartData)
-    }
+    const [monthlySaving, setMonthlySaving] = useState(30000)
 
     useEffect(() => {
         const fetchData = async () => {
-            const response = await fetch('/api/spx')
-            const spx = await response.json()
-            setSPX(spx)
-
-            // const _data = await fetch('/api/dataHandler')
-            // const data = await _data.json()
-            // setData(data)
+            const url = `/api/dataHandler?product=${productSymbol}&start=${startDate}&end=${endDate}&monthlysaving=${monthlySaving}`
+            console.log('url = ', url)
+            const response = await fetch(url)
+            const data = await response.json()
+            setProductData(data)
+            setProduct(data['productList'][productType][productSymbol])
         }
         fetchData()
-    }, [])
+    }, [productSymbol, productType, startDate, endDate, monthlySaving])
 
-    useEffect(() => {
-        if (spx) {
-            let _filtered = []
-            _.filter(spx['date'], (_date, i) => {
-                if (_date >= startDate && _date < endDate) {
-                    _filtered.push({
-                        id: i,
-                        date: moment2str(moment(_date)),
-                        close: spx['close'][i],
-                        ratio: spx['ratio'][i]
-                    })
-                }
-            })
-            setFilteredSPX(_filtered)
+
+    const ProductList = () => {
+        // const currentList = productType == 'index' ? productData['productList']['index'] : productData['productList']['individual']
+        let currentList
+        if (productType == 'index') {
+            currentList = productData['productList']['index']
+        } else if (productType == 'individual') {
+            currentList =  productData['productList']['individual']
+        } else if (productType == 'crypto') {
+            currentList =  productData['productList']['crypto']
         }
-    }, [spx, startDate])
 
-    useEffect(() => {
-        simulate()
-    }, [filteredSPX, monthlySaving])
-
-    const DateRangePicker = () => {
         return (
-            <LocalizationProvider dateAdapter={AdapterMoment}>
-                <Stack direction='row' spacing={3} style={{padding: '10px 40px'}}>
-                    <DatePicker views={['year', 'month']} label='From' minDate={minDate} maxDate={maxDate}
-                                value={startDate} onChange={_date => setStartDate(_date)}
-                                renderInput={params => <TextField {...params} />}/>
-                    <DatePicker views={['year', 'month']} label='To' minDate={minDate} maxDate={maxDate} value={endDate}
-                                onChange={_date => setEndDate(_date)}
-                                renderInput={params => <TextField {...params} />}/>
-                </Stack>
-            </LocalizationProvider>
+            <List>
+                {_.map(currentList, item =>
+                    <StyledListItem className={productSymbol == item['symbol'] ? 'active' : ''}
+                                    onClick={() => setProductSymbol(item['symbol'])}>
+                        <ListItemAvatar>
+                            <Avatar src={item['img']} alt={item['label']}/>
+                        </ListItemAvatar>
+                        <ListItemText primary={item['label']}/>
+                    </StyledListItem>)}
+            </List>
         )
     }
 
+    if (!productData) return
+
     return (
-        <div>
-            <Header/>
-            <Container maxWidth='md'>
-                <Link href='/dark'>Go to D side</Link>
-                <Segment onSubmit={newItem => setSelectedItem(newItem)}/>
-
-                <Card >
-                    <CardHeader avatar={<Avatar src={selectedItem['img']}/>} title={selectedItem['label']}/>
-                    <CardContent>
-                        <Typography gutterBottom variant='h4' component='div'>
-                            {selectedItem['label']}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            {selectedItem['description']}
-                        </Typography>
-                    </CardContent>
-                    <CardActions>
-                        <IconButton>
-                            <InfoIcon/>
-                        </IconButton>
-                    </CardActions>
-                </Card>
-
-                <section style={{margin: '30px 0'}}>
-                    <div>
-                        <ul style={{padding: '0'}}>
-                            <ListWrapper>
-                                <LabelWrapper>積立期間</LabelWrapper>
-                                <DateRangePicker/>
-                            </ListWrapper>
-                            <ListWrapper>
-                                <LabelWrapper>毎月積立額</LabelWrapper>
-                                <TextField label='' sx={{m: 1, width: '25ch'}}
-                                           style={{padding: '10px 40px', margin: '0'}} value={monthlySaving}
-                                           InputProps={{
-                                               endAdornment: <InputAdornment position='end'>円</InputAdornment>
-                                           }}
-                                           onChange={e => setMonthlySaving(Number(e.target.value))}/>
-                            </ListWrapper>
-                        </ul>
-                    </div>
-                </section>
-
-                <div>
-                    <StackedBarChart data={chartData}/>
-                </div>
-            </Container>
-        </div>
+        <Container>
+            <App>
+                <Header>Simulator</Header>
+                <Wrapper>
+                    <Main>
+                        <MainHeader>
+                            <HeaderMenu>
+                                <Menu className={productType == 'index' ? 'active' : ''}
+                                      onClick={() => setProductType('index')}>株式指数</Menu>
+                                <Menu className={productType == 'individual' ? 'active' : ''}
+                                      onClick={() => setProductType('individual')}>個別銘柄</Menu>
+                                <Menu className={productType == 'crypto' ? 'active' : ''}
+                                      onClick={() => setProductType('crypto')}>暗号資産</Menu>
+                            </HeaderMenu>
+                        </MainHeader>
+                        <ContentWrapper>
+                            <ContentHeader>
+                                <ProductList/>
+                            </ContentHeader>
+                            <ContentSection>
+                                <div>積立設定</div>
+                                <ul>
+                                    <li>
+                                        <div style={{width: '150px'}}>積立銘柄</div>
+                                        <ListItem>
+                                            <ListItemAvatar>
+                                                <Avatar src={product['img']} alt={product['label']}/>
+                                            </ListItemAvatar>
+                                            <ListItemText primary={product['label']}/>
+                                        </ListItem>
+                                    </li>
+                                    <li>
+                                        <div style={{width: '150px'}}>積立期間</div>
+                                        <DateRangePicker start={startDate} end={endDate} min={productData['minDate']}
+                                                         max={productData['maxDate']}
+                                                         onStartChange={_d => setStartDate(_d)}
+                                                         onEndChange={_d => setEndDate(_d)}/>
+                                    </li>
+                                    <li>
+                                        <div style={{width: '150px'}}>毎月積立額</div>
+                                        <TextField label='' style={{margin: '0'}} value={monthlySaving}
+                                                   InputProps={{
+                                                       endAdornment: <InputAdornment position='end'>円</InputAdornment>
+                                                   }}
+                                                   onChange={e => setMonthlySaving(Number(e.target.value))}/>
+                                    </li>
+                                </ul>
+                            </ContentSection>
+                            <ContentSection>
+                                <div className='chart-wrapper'>
+                                    <StackedBarChart data={productData['simulationData']['chartData']}/>
+                                </div>
+                            </ContentSection>
+                        </ContentWrapper>
+                    </Main>
+                </Wrapper>
+            </App>
+        </Container>
     )
 }
 
-export default Home
+export default Index
 
 
-const MenuWrapper = styled.ul`
-    font-size: 0;
-    padding-bottom: 26px;
+const Container = styled.div`
+    background: #333;
+    color: #fff;
+    font-family:  "Poppins", sans-serif;
     display: flex;
-    display: -ms-flexbox;
-    display: -webkit-box;
-    display: -webkit-flex;
-    justify-content: space-between;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 2em;
+    width: 100%;
+    height: 100vh;
+    background-image: url('Einstein01.jpeg');
+    // background-image: linear-gradient(45deg, #888, transparent);
+    background-size: cover;
+    background-position: center;
 `
 
-const MenuItem = styled.li`
-    display: inline-block;
-    text-align: center;
-    vertical-align: top;
-    width: 50%;
+const App = styled.div`
+    background-color: rgba(16 18 27 / 40%);
+    max-width: 1250px;
+    max-height: 860px;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    border-radius: 14px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    font-size: 15px;
+    font-weight: 500;
+    // background-image: url('neon-frame2.webp');
+    // background-image: linear-gradient(45deg, #888, transparent);
+    background-size: cover;
+    background-position: center;
+`
+
+const Header = styled.div`
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    height: 58px;
+    width: 100%;
+    border-bottom: 1px solid rgba(113 119 144 / 25%);;
+    padding: 0 30px;
+    white-space: nowrap;
+`
+
+const Wrapper = styled.div`
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+`
+
+const Main = styled.div`
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+`
+
+const MainHeader = styled.div`
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(113 119 144 / 25%);
+    height: 58px;
+    flex-shrink: 0;
+`
+
+const HeaderMenu = styled.div`
+    display: flex;
+    align-items: center;
+    margin: auto;
+`
+
+const Menu = styled.a`
+    padding: 20px 24px;
+    text-decoration: none;
+    color: rgb(113 119 144 / 78%);
+    border-bottom: 2px solid transparent;
+    transition: 0.3s;
+    cursor: pointer;
+    background-color: transparent;
     
-    a {
-        font-size: 16px;
-        line-height: 1.2;
-        font-weight: bold;
-        text-align: center;
-        color: #004fab;
-        display: block;
-        padding: 160px 0 0;
-        height: 50px;
-        background-color: #fff;
-        background-position: 50% 40px;
-        background-repeat: no-repeat;
-        text-decoration: none;
+    &.active {
+        color: #f9fafb;
+        border-bottom: 2px solid #f9fafb;    
     }
 `
 
-
-const ListWrapper = styled.li`
-    background: #ECF4FA;
-    border-radius: 12px;
-    text-align: center;
+const ContentWrapper = styled.div`
     display: flex;
-    flex-wrap: wrap;
-    max-width: 100%;
-    height: 70px;
-    margin-bottom: 10px;
-    
-    > div > div {
-        /* date picker white BG */
-        background: #fff;
-    } 
-`
-
-const LabelWrapper = styled.label`
-    border-radius: 12px 0 0 12px;
-    padding: 22px 0;
-    width: 155px;
+    flex-direction: column;
+    color: #f9fafb;
+    padding: 20px 40px;
     height: 100%;
-
-    font-size: 1.4rem;
-    color: #32353A;
-    font-weight: bold;
-    background: #DFE0E1;
-    display: inline-block;
+    overflow: auto;
+    background-color: rgba(16 18 27 / 40%);
 `
 
-const DatePickerWrapper = styled.div`
+const ContentHeader = styled.div`
     display: flex;
-    padding: 10px 0;
-    margin-right: 40px;
-
-    input {
-        height: 40px;
-        border: 1px solid rgba(34,36,38,.15);
-        border-radius: 0.28rem 0 0 .28rem;
-        background: white;
-        color: black;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+    border-radius: 14px;
+    padding: 20px 40px;
+    background-color: rgb(146 151 179 / 13%);
+    padding-left: 0;
+    margin: 0;
+    border-radius: 14px;
+    border: 1px solid rgba(16 18 27 / 40%);
+    cursor: pointer;
+    
+    ul {
+        width: 100%;
     }
     
-    span {
-        padding: 0.58em 0.8em;
-        background: #e8e8e8e8;
-        border-radius: 0 0.28rem 0.28rem 0;
+    ul li + li {
+        border-top: 1px solid rgba(113 119 144 / 25%);
+    }
+`
+
+const StyledListItem = styled(ListItem)`
+    cursor: pointer;
+    &.active {
+        // transform: scale(1.02);
+        background-color: rgba(255 255 255 / 40%);
+    }  
+`
+
+const ContentSection = styled.div`
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    
+    > div {
+        // .content-section-title
+        color: #999ba5;
+        margin-bottom: 14px;
+    }
+    
+    ul, .chart-wrapper {
+        // .content-section ul
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        justify-content: space-around;
+        background-color: rgb(146 151 179 / 13%);
+        padding-left: 0;
+        margin: 0;
+        border-radius: 14px;
+        border: 1px solid rgba(16 18 27 / 40%);
+        cursor: pointer;
+    }
+    
+    ul li {
+        // .content-section ul li
+        list-style: none;
+        padding: 10px 18px;
+        display: flex;
+        align-items: center;
+        font-size: 16px;
+        width: 100%;
+        height: 100%;
+        white-space: nowrap;
+        transition: 0.3s;
+    }
+    
+    ul li + li {
+        border-top: 1px solid rgba(113 119 144 / 25%);
+    }
+    
+    ul li div {
+        display: flex;
+        align-items: center;
+        
     }
 `
