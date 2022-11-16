@@ -16,6 +16,8 @@ const Index = () => {
     const [endDate, setEndDate] = useState(moment('2022-01-01'))
     const [monthlySaving, setMonthlySaving] = useState(30000)
 
+    console.log('product = ', product)
+
     useEffect(() => {
         const fetchData = async () => {
             const url = `/api/dataHandler?product=${productSymbol}&start=${startDate}&end=${endDate}&monthlysaving=${monthlySaving}`
@@ -25,7 +27,7 @@ const Index = () => {
             setProduct(data['productList'][productType][productSymbol])
         }
         fetchData()
-    }, [productSymbol, productType, startDate, endDate, monthlySaving])
+    }, [productSymbol, startDate, endDate, monthlySaving])
 
 
     const ProductList = () => {
@@ -52,7 +54,7 @@ const Index = () => {
         )
     }
 
-    if (!productData) return
+    if (!productData || !product) return
 
     return (
         <Container>

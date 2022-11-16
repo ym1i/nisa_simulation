@@ -8,7 +8,7 @@ import CalculateIcon from '@mui/icons-material/Calculate'
 
 
 const StackedBarChart = ({data}) => {
-    console.log('barChart.js \n | data = ', data)
+    //console.log('barChart.js \n | data = ', data)
     const [date, setDate] = useState()
     const [principal, setPrincipal] = useState()
     const [earnings, setEarnings] = useState()
