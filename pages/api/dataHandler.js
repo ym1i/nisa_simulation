@@ -32,6 +32,7 @@ const simulate = (_data, _monthlySaving) => {
             chartData.push({
                 name: moment2Year(d['date']),
                 date: moment2str(d['date']),
+                total: result[i],
                 earnings: (result[i] - principal[i]),
                 principal: principal[i]
             })
@@ -40,6 +41,7 @@ const simulate = (_data, _monthlySaving) => {
                 chartData.push({
                     name: moment2Year(d['date']),
                     date: moment2str(d['date']),
+                    total: result[i],
                     earnings: (result[i] - principal[i]),
                     principal: principal[i]
                 })
@@ -50,6 +52,7 @@ const simulate = (_data, _monthlySaving) => {
         chartData.push({
             name: moment2Year(_data[_data.length - 1]['date']),
             date: moment2str(_data[_data.length - 1]['date']),
+            total: result[result.length - 1],
             earnings: (result[result.length - 1] - principal[principal.length - 1]),
             principal: principal[principal.length - 1]
         })
@@ -64,9 +67,9 @@ export default function dataHandler(req, res) {
     const {product, start, end, monthlysaving} = query
 
     const setData = (historicalData) => {
-        const size = _.size(historicalData["date"])
-        const minDate = moment(historicalData["date"][size - 1])
-        const maxDate = moment(historicalData["date"][0])
+        const size = _.size(historicalData['date'])
+        const minDate = moment(historicalData['date'][size - 1])
+        const maxDate = moment(historicalData['date'][0])
 
         let filteredData = []
         _.filter(historicalData['date'], (_date, i) => {

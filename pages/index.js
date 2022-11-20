@@ -16,7 +16,6 @@ const Index = () => {
     const [endDate, setEndDate] = useState(moment('2022-01-01'))
     const [monthlySaving, setMonthlySaving] = useState(30000)
 
-    console.log('product = ', product)
 
     useEffect(() => {
         const fetchData = async () => {
@@ -41,7 +40,7 @@ const Index = () => {
         }
 
         return (
-            <List>
+            <List style={{height: '260px', overflow: 'auto'}}>
                 {_.map(currentList, item =>
                     <StyledListItem className={productSymbol == item['symbol'] ? 'active' : ''}
                                     onClick={() => setProductSymbol(item['symbol'])}>
@@ -107,7 +106,9 @@ const Index = () => {
                             </ContentSection>
                             <ContentSection>
                                 <div className='chart-wrapper'>
-                                    <StackedBarChart data={productData['simulationData']['chartData']}/>
+                                    <StackedBarChart
+                                        data={productData['simulationData']['chartData']} product={product}
+                                        start={startDate} end={endDate} monthly={monthlySaving}/>
                                 </div>
                             </ContentSection>
                         </ContentWrapper>
