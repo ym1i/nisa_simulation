@@ -26,6 +26,7 @@ const simulate = (_data, _monthlySaving) => {
     let principal = [0]
     let chartData = []
     _.reverse(_data).map((d, i) => {
+        console.log('date = ', d['date'])
         result[i + 1] = (result[i] + _monthlySaving) * (1 + d['ratio'])
         principal[i + 1] = principal[i] + _monthlySaving
         if (_data.length <= 48) {
@@ -73,7 +74,7 @@ export default function dataHandler(req, res) {
 
         let filteredData = []
         _.filter(historicalData['date'], (_date, i) => {
-            if (_date >= moment(start) && _date <= moment(end)) {
+            if (_date >= moment(start).startOf('days') && _date <= moment(end).endOf('days')) {
                 filteredData.push({
                     id: i,
                     date: moment(_date),

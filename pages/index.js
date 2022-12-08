@@ -13,8 +13,8 @@ const Index = () => {
     const [productType, setProductType] = useState('index')
     const [productData, setProductData] = useState(null)
     const [startDate, setStartDate] = useState(moment('2000-01-01'))
-    const [endDate, setEndDate] = useState(moment('2022-01-01'))
-    const [monthlySaving, setMonthlySaving] = useState(30000)
+    const [endDate, setEndDate] = useState(moment('2020-01-01'))
+    const [monthlySaving, setMonthlySaving] = useState(10000)
 
 
     useEffect(() => {
